@@ -816,12 +816,12 @@ namespace
         ZoneEffectEntry const* entry = FindEntry(*cfg, pick);
         if (!entry)
         {
-            // Nothing valid to apply now — leave as-is.
+            // Nothing valid to apply now — leave as-is; next scheduler beat will retry.
             rt.phase = Phase::Idle;
             return;
         }
 
-        // Roll an apex within the zone's % band and map to raw using the global InternalRange.
+        // Roll apex in % band and map to raw using global InternalRange.
         float pct01 = std::clamp((entry->minPct + (entry->maxPct - entry->minPct) * RandUnit()) / 100.0f, 0.0f, 1.0f);
         float apex = ApexFromPct(dp, pick, pct01);
 
@@ -830,12 +830,12 @@ namespace
         // Record targets for the upcoming transition.
         rt.nextState = pick;
         rt.apexTarget = apex;
-        rt.fadeInStart = newRange.min;   // 0% point of the new state's internal range
+        rt.fadeInStart = newRange.min;   // 0% point for the new state
 
         // ---------- First run (no previous state pushed) ----------
         if (!rt.initialized)
         {
-            // Initialize: push the picked state at MIN so clients see the correct effect immediately.
+            // Initialize: push picked state at MIN so clients see the correct effect immediately.
             rt.currentState = pick;
             rt.currentGrade = ClampToCoreBounds(newRange.min);
             PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
@@ -843,7 +843,8 @@ namespace
             // Plan only FadeIn to the apex (no FadeOut on first run).
             float inDelta = std::max(0.0f, rt.apexTarget - rt.currentGrade);
             rt.fadeOutStepsLeft = 0;
-            rt.fadeInStepsLeft = (inDelta <= 0.0f) ? 0 : int(std::ceil(inDelta / g_FadeStepValue));
+            // Ensure at least one step when apex > MIN (prevents instant jump to apex)
+            rt.fadeInStepsLeft = (inDelta <= kEps) ? 0 : std::max(1, int(std::ceil(inDelta / g_FadeStepValue)));
 
             if (rt.fadeInStepsLeft > 0)
             {
@@ -863,15 +864,16 @@ namespace
         }
 
         // ---------- Subsequent runs ----------
-        bool sameState = (pick == rt.currentState);
+        const bool sameState = (pick == rt.currentState);
 
         // Case 1: same state, apex ABOVE current → gentle fade up (no drop to MIN).
         if (sameState && rt.apexTarget > rt.currentGrade + kEps)
         {
-            // Start from current (but AdvanceFadeIn will enforce >= MIN).
-            float inDelta = std::max(0.0f, rt.apexTarget - std::max(rt.currentGrade, newRange.min));
+            float start = std::max(rt.currentGrade, newRange.min); // ensure ≥ MIN
+            float inDelta = std::max(0.0f, rt.apexTarget - start);
             rt.fadeOutStepsLeft = 0;
-            rt.fadeInStepsLeft = (inDelta <= 0.0f) ? 0 : int(std::ceil(inDelta / g_FadeStepValue));
+            // Force at least one step if there is any distance to cover
+            rt.fadeInStepsLeft = (inDelta <= kEps) ? 0 : std::max(1, int(std::ceil(inDelta / g_FadeStepValue)));
 
             if (rt.fadeInStepsLeft > 0)
             {
@@ -887,10 +889,11 @@ namespace
         // Case 2: same state, apex BELOW current → gentle fade down within the same state.
         else if (sameState && rt.apexTarget < rt.currentGrade - kEps)
         {
-            rt.fadeOutStart = rt.currentGrade;   // fade down from current grade
-            rt.fadeOutTarget = rt.apexTarget;     // to the new apex (same state)
+            rt.fadeOutStart = rt.currentGrade;    // fade down from current
+            rt.fadeOutTarget = rt.apexTarget;      // to the new apex (same state)
             float outDelta = std::max(0.0f, rt.fadeOutStart - rt.fadeOutTarget);
-            rt.fadeOutStepsLeft = (outDelta <= 0.0f) ? 0 : int(std::ceil(outDelta / g_FadeStepValue));
+            // Force at least one step if there is any distance to cover
+            rt.fadeOutStepsLeft = (outDelta <= kEps) ? 0 : std::max(1, int(std::ceil(outDelta / g_FadeStepValue)));
             rt.fadeInStepsLeft = 0;
 
             if (rt.fadeOutStepsLeft > 0)
@@ -904,29 +907,42 @@ namespace
                 rt.phaseRemainingMs = RandDuration(entry->dwellMinSec, entry->dwellMaxSec);
             }
         }
-        // Case 3: different state → classic fade-out (old MAX → new MIN) then fade-in to apex.
+        // Case 3: different state → crossfade
         else
         {
-            rt.fadeOutStart = rt.currentGrade;
-            rt.fadeOutTarget = newRange.min;
+            rt.fadeOutStart = rt.currentGrade;    // from actual current
+            rt.fadeOutTarget = newRange.min;       // to new state's MIN
             float outDelta = std::max(0.0f, rt.fadeOutStart - rt.fadeOutTarget);
-            rt.fadeOutStepsLeft = (outDelta <= 0.0f) ? 0 : int(std::ceil(outDelta / g_FadeStepValue));
+            // Ensure at least one step if there is any distance to cover
+            rt.fadeOutStepsLeft = (outDelta <= kEps) ? 0 : std::max(1, int(std::ceil(outDelta / g_FadeStepValue)));
 
             float inDelta = std::max(0.0f, rt.apexTarget - newRange.min);
-            rt.fadeInStepsLeft = (inDelta <= 0.0f) ? 0 : int(std::ceil(inDelta / g_FadeStepValue));
+            // Ensure at least one step if there is any distance to cover
+            rt.fadeInStepsLeft = (inDelta <= kEps) ? 0 : std::max(1, int(std::ceil(inDelta / g_FadeStepValue)));
 
             if (rt.fadeOutStepsLeft > 0)
             {
+                // normal fade-out first (still on old state)
                 rt.phase = Phase::FadeOut;
                 rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
             }
             else if (rt.fadeInStepsLeft > 0)
             {
+                // No fade-out needed → flip to new state at MIN and push once, then fade-in.
+                rt.currentState = rt.nextState;
+                rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN
+                PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
+
                 rt.phase = Phase::FadeIn;
                 rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
             }
             else
             {
+                // No fades at all (rare) → land on apex and dwell.
+                rt.currentState = rt.nextState;
+                rt.currentGrade = ClampToCoreBounds(rt.apexTarget);
+                PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
+
                 rt.phase = Phase::Dwell;
                 rt.phaseRemainingMs = RandDuration(entry->dwellMinSec, entry->dwellMaxSec);
             }
@@ -937,38 +953,33 @@ namespace
         else { rt.rpt.lastPicked = pick; rt.rpt.repeats = 1; }
     }
 
-
     static void AdvanceFadeOut(ZoneRuntime& rt)
     {
         constexpr float kEps = 1e-4f;
 
-        // If we're at/under the target already, finish fade-out immediately.
-        if (rt.currentGrade <= rt.fadeOutTarget + kEps || rt.fadeOutStepsLeft <= 0)
+        // If fade-out is done OR we're already at/under the target, flip to new state at MIN and start fade-in.
+        if (rt.fadeOutStepsLeft <= 0 || rt.currentGrade <= rt.fadeOutTarget + kEps)
         {
-            // If we’re already done fading out, jump straight into fade-in.
-            if (rt.fadeOutStepsLeft <= 0)
+            if (rt.fadeInStepsLeft > 0)
             {
-                if (rt.fadeInStepsLeft > 0)
-                {
-                    // Switch state now and push a baseline at MIN so clients don’t sit on the old state
-                    rt.currentState = rt.nextState;
-                    rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN
-                    PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
+                // *** Force the handoff: switch state and push at MIN before fading in ***
+                rt.currentState = rt.nextState;
+                rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN (e.g. 0.30)
+                PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
 
-                    rt.phase = Phase::FadeIn;
-                    rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
-                }
-                else
-                {
-                    // No fade-in needed; go dwell right away
-                    rt.phase = Phase::Dwell;
-                    rt.stepRemainingMs = 0;
-                }
-                return;
+                rt.phase = Phase::FadeIn;
+                rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
             }
+            else
+            {
+                // No fade-in needed → dwell
+                rt.phase = Phase::Dwell;
+                rt.stepRemainingMs = 0;
+            }
+            return;
         }
 
-        // Do one fade-out step (still pushing the OLD state)
+        // ... keep your existing per-step fade-out logic below ...
         float next = std::max(rt.fadeOutTarget, rt.currentGrade - g_FadeStepValue);
         rt.currentGrade = ClampToCoreBounds(next);
         PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
@@ -980,9 +991,9 @@ namespace
         {
             if (rt.fadeInStepsLeft > 0)
             {
-                // Immediately flip to the NEW state at MIN and begin fade-in next tick
+                // *** Same handoff here when steps run out ***
                 rt.currentState = rt.nextState;
-                rt.currentGrade = ClampToCoreBounds(rt.fadeInStart);
+                rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN
                 PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
 
                 rt.phase = Phase::FadeIn;
@@ -995,6 +1006,7 @@ namespace
             }
         }
     }
+
 
     static void AdvanceFadeIn(ZoneRuntime& rt)
     {
@@ -1262,8 +1274,10 @@ public:
         for (auto const& kv : g_Runtime)
         {
             if (g_LastApplied.count(kv.first)) continue;
+            ZoneRuntime const& rt = kv.second;
             oss << "zone " << kv.first
-                << " -> last state=unknown raw=0.00";
+                << " -> last state=" << WeatherStateName(rt.currentState)
+                << " raw=" << std::fixed << std::setprecision(2) << rt.currentGrade;
 
             std::string extra = RuntimeLine(kv.first);
             if (!extra.empty()) oss << extra;
