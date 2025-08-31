@@ -826,7 +826,6 @@ namespace
         float apex = ApexFromPct(dp, pick, pct01);
 
         Range newRange = GetRange(dp, pick);
-        Range curRange = GetRange(dp, rt.currentState);
 
         // Record targets for the upcoming transition.
         rt.nextState = pick;
@@ -908,8 +907,8 @@ namespace
         // Case 3: different state → classic fade-out (old MAX → new MIN) then fade-in to apex.
         else
         {
-            rt.fadeOutStart = curRange.max;      // per design: fade-out starts at current state's MAX
-            rt.fadeOutTarget = newRange.min;      // and goes down to new state's MIN
+            rt.fadeOutStart = rt.currentGrade;
+            rt.fadeOutTarget = newRange.min;
             float outDelta = std::max(0.0f, rt.fadeOutStart - rt.fadeOutTarget);
             rt.fadeOutStepsLeft = (outDelta <= 0.0f) ? 0 : int(std::ceil(outDelta / g_FadeStepValue));
 
@@ -941,26 +940,32 @@ namespace
 
     static void AdvanceFadeOut(ZoneRuntime& rt)
     {
-        // If we’re already done fading out, jump straight into fade-in.
-        if (rt.fadeOutStepsLeft <= 0)
-        {
-            if (rt.fadeInStepsLeft > 0)
-            {
-                // Switch state now and push a baseline at MIN so clients don’t sit on the old state
-                rt.currentState = rt.nextState;
-                rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN
-                PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
+        constexpr float kEps = 1e-4f;
 
-                rt.phase = Phase::FadeIn;
-                rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
-            }
-            else
+        // If we're at/under the target already, finish fade-out immediately.
+        if (rt.currentGrade <= rt.fadeOutTarget + kEps || rt.fadeOutStepsLeft <= 0)
+        {
+            // If we’re already done fading out, jump straight into fade-in.
+            if (rt.fadeOutStepsLeft <= 0)
             {
-                // No fade-in needed; go dwell right away
-                rt.phase = Phase::Dwell;
-                rt.stepRemainingMs = 0;
+                if (rt.fadeInStepsLeft > 0)
+                {
+                    // Switch state now and push a baseline at MIN so clients don’t sit on the old state
+                    rt.currentState = rt.nextState;
+                    rt.currentGrade = ClampToCoreBounds(rt.fadeInStart); // new state's MIN
+                    PushWeatherToClient(rt.zoneId, rt.currentState, rt.currentGrade);
+
+                    rt.phase = Phase::FadeIn;
+                    rt.stepRemainingMs = RandDuration(g_FadeStepMinSec, g_FadeStepMaxSec);
+                }
+                else
+                {
+                    // No fade-in needed; go dwell right away
+                    rt.phase = Phase::Dwell;
+                    rt.stepRemainingMs = 0;
+                }
+                return;
             }
-            return;
         }
 
         // Do one fade-out step (still pushing the OLD state)

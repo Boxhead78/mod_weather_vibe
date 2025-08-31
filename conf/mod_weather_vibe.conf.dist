@@ -42,92 +42,92 @@ WeatherVibe.DayPart.NIGHT.Start     = 22:00
 #######################################################################################################
 #######################################################################################################
 # Internal intensity ranges - raw grade clamps per daypart/state
-# Defaults: 0.30 – 0.90 for every WeatherState and every daypart.
+# Defaults: 0.30 – 1.00 for every WeatherState and every daypart.
 #######################################################################################################
 
 # Fine (0)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.Fine          = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.Fine        = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.Fine          = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.Fine            = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.Fine          = 0.00, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.Fine        = 0.00, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.Fine          = 0.00, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.Fine            = 0.00, 1.00
 
 # Fog (1)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.Fog           = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.Fog         = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.Fog           = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.Fog             = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.Fog           = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.Fog         = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.Fog           = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.Fog             = 0.30, 1.00
 
 # Light Rain (3)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.LightRain     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.LightRain   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.LightRain     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.LightRain       = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.LightRain     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.LightRain   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.LightRain     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.LightRain       = 0.30, 1.00
 
 # Medium Rain (4)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.MediumRain    = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumRain  = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.MediumRain    = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.MediumRain      = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.MediumRain    = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumRain  = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.MediumRain    = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.MediumRain      = 0.30, 1.00
 
 # Heavy Rain (5)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.HeavyRain     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavyRain   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.HeavyRain     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.HeavyRain       = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.HeavyRain     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavyRain   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.HeavyRain     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.HeavyRain       = 0.30, 1.00
 
 # Light Snow (6)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.LightSnow     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.LightSnow   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.LightSnow     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.LightSnow       = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.LightSnow     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.LightSnow   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.LightSnow     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.LightSnow       = 0.30, 1.00
 
 # Medium Snow (7)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.MediumSnow    = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumSnow  = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.MediumSnow    = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.MediumSnow      = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.MediumSnow    = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumSnow  = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.MediumSnow    = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.MediumSnow      = 0.30, 1.00
 
 # Heavy Snow (8)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.HeavySnow     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavySnow   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.HeavySnow     = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.HeavySnow       = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.HeavySnow     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavySnow   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.HeavySnow     = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.HeavySnow       = 0.30, 1.00
 
 # Light Sandstorm (22)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.LightSandstorm   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.LightSandstorm = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.LightSandstorm   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.LightSandstorm     = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.LightSandstorm   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.LightSandstorm = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.LightSandstorm   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.LightSandstorm     = 0.30, 1.00
 
 # Medium Sandstorm (41)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.MediumSandstorm  = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumSandstorm= 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.MediumSandstorm  = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.MediumSandstorm    = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.MediumSandstorm  = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.MediumSandstorm= 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.MediumSandstorm  = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.MediumSandstorm    = 0.30, 1.00
 
 # Heavy Sandstorm (42)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.HeavySandstorm   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavySandstorm = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.HeavySandstorm   = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.HeavySandstorm     = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.HeavySandstorm   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.HeavySandstorm = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.HeavySandstorm   = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.HeavySandstorm     = 0.30, 1.00
 
 # Thunders (86)
 # ----------------------------------------------------------------------
-WeatherVibe.Intensity.InternalRange.MORNING.Thunders         = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.AFTERNOON.Thunders       = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.EVENING.Thunders         = 0.30, 0.90
-WeatherVibe.Intensity.InternalRange.NIGHT.Thunders           = 0.30, 0.90
+WeatherVibe.Intensity.InternalRange.MORNING.Thunders         = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.AFTERNOON.Thunders       = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.EVENING.Thunders         = 0.30, 1.00
+WeatherVibe.Intensity.InternalRange.NIGHT.Thunders           = 0.30, 1.00
 
 
 #######################################################################################################
@@ -145,10 +145,10 @@ WeatherVibe.Zone.Repeat.Max = 2
 
 # Fade step size in RAW grade units (NOT percentage).
 # Example: 0.05 moves 0.30 -> 0.35 -> 0.40 ...
-WeatherVibe.Fade.StepValue = 0.07
+WeatherVibe.Fade.StepValue = 0.05
 
 # Each fade step waits a random duration in this range (seconds).
-WeatherVibe.Fade.StepDuration.Min = 20
+WeatherVibe.Fade.StepDuration.Min = 30
 WeatherVibe.Fade.StepDuration.Max = 40
 
 # Stagger zone updates so not all zones change at the same time.
