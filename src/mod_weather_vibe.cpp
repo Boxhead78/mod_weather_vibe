@@ -1098,33 +1098,44 @@ class WeatherVibe_PlayerScript : public PlayerScript
 public:
     WeatherVibe_PlayerScript() : PlayerScript("WeatherVibe_PlayerScript") {}
 
+    inline static std::unordered_map<ObjectGuid, uint32> s_WeatherAcc{};
+
     void OnPlayerLogin(Player* player) override
     {
-         if (!g_EnableModule) 
+        if (!g_EnableModule || !player)
             return;
-        
-        ChatHandler(player->GetSession()).SendSysMessage("|cff00ff00WeatherVibe:|r enabled.");
+
+        //ChatHandler(player->GetSession()).SendSysMessage("|cff00ff00WeatherVibe:|r enabled.");
         uint32 controller = ResolveControllerZone(player->GetZoneId());
         if (auto it = g_AutoZones.find(controller); it != g_AutoZones.end() && it->second.enabled)
         {
             SeedAutoFromLastApplied(controller, it->second);
         }
-        
+
         PushLastAppliedWeatherToClient(player->GetZoneId(), player->GetSession());
     }
 
-    void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
+    void OnPlayerAfterUpdate(Player* player, uint32 diff) override
     {
-        if (!g_EnableModule) 
+        if (!g_EnableModule || !player)
             return;
-        
-        uint32 controller = ResolveControllerZone(newZone);
+
+        uint32& acc = s_WeatherAcc[player->GetGUID()];
+        acc += diff;
+
+        if (acc < 15000)
+            return;
+
+        // Reset
+        acc = 0; 
+
+        uint32 controller = ResolveControllerZone(player->GetZoneId());
         if (auto it = g_AutoZones.find(controller); it != g_AutoZones.end() && it->second.enabled)
         {
             SeedAutoFromLastApplied(controller, it->second);
         }
-        
-        PushLastAppliedWeatherToClient(newZone, player->GetSession());
+
+        PushLastAppliedWeatherToClient(player->GetZoneId(), player->GetSession());
     }
 };
 
