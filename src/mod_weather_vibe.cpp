@@ -1100,9 +1100,20 @@ public:
 
     inline static std::unordered_map<ObjectGuid, uint32> s_WeatherAcc{};
 
+    struct WeatherAccData : public DataMap::Base
+    {
+        uint32 acc = 0;
+    };
+
+    static inline uint32& GetWeatherAcc(Player* player)
+    {
+        auto* data = player->CustomData.GetDefault<WeatherAccData>("WeatherVibeAcc");
+        return data->acc;
+    }
+
     void OnPlayerLogin(Player* player) override
     {
-        if (!g_EnableModule || !player)
+        if (!g_EnableModule)
             return;
 
         //ChatHandler(player->GetSession()).SendSysMessage("|cff00ff00WeatherVibe:|r enabled.");
@@ -1120,9 +1131,8 @@ public:
         if (!g_EnableModule || !player)
             return;
 
-        uint32& acc = s_WeatherAcc[player->GetGUID()];
+        uint32& acc = GetWeatherAcc(player);
         acc += diff;
-
         if (acc < 15000)
             return;
 
@@ -1131,9 +1141,7 @@ public:
 
         uint32 controller = ResolveControllerZone(player->GetZoneId());
         if (auto it = g_AutoZones.find(controller); it != g_AutoZones.end() && it->second.enabled)
-        {
             SeedAutoFromLastApplied(controller, it->second);
-        }
 
         PushLastAppliedWeatherToClient(player->GetZoneId(), player->GetSession());
     }
